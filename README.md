@@ -8,11 +8,13 @@ GitHub Pages: https://trinhtanphat.github.io/de-thi-chon-doi-tuyen-nghe-an-2026-
 
 ## Nội dung
 
-- `de-bai.html`: toàn văn đề bài từ hai ảnh gốc người dùng cung cấp.
+- `de-bai.html`: toàn văn đề bài đã đối chiếu lại với hai ảnh gốc người dùng cung cấp.
 - `solutions/q1.html` … `solutions/q7.html`: lời giải chi tiết từng câu.
-- Câu 3 và Câu 5 có SVG hình học minh họa.
+- `tools/geometry-core.js`: lõi hình học 2D dùng chung.
+- `tools/q3-interactive.js`, `tools/q5-interactive.js`: dựng hình tương tác từ đúng định nghĩa, có residual kiểm chứng và xuất SVG.
 - Câu 7 có mô phỏng vòng đèn tương tác.
-- Công thức render bằng KaTeX; giao diện có dark/light mode và hiệu ứng chiều sâu 3D nhẹ.
+- Công thức render bằng KaTeX; UI dùng Be Vietnam Pro, nội dung dùng Noto Serif, residual dùng JetBrains Mono.
+- Giao diện có dark/light mode và hiệu ứng chiều sâu 3D nhẹ; hình học vẫn giữ 2D chính xác.
 
 ## Kết quả chính
 
@@ -24,6 +26,17 @@ GitHub Pages: https://trinhtanphat.github.io/de-thi-chon-doi-tuyen-nghe-an-2026-
 - Câu 6: số hệ số khác 0 nhỏ nhất là `ceil(n/2)+1`.
 - Câu 7: phần a iff `gcd(n,k)=1`; phần b, với `g=gcd(n,k)`, `m=n/g`, số bản ghi là `(2^m-1)^(g-1)(2^m+g-1)`.
 
-## Kiểm tra
+## Kiểm tra trước khi phát hành
 
-Chạy `python scripts/verify_site.py` và `python scripts/math_sanity.py` trước khi phát hành.
+Chạy toàn bộ gate sau:
+
+```powershell
+python scripts\verify_site.py
+python scripts\font_sanity.py
+node scripts\renderer_sanity.mjs
+node scripts\geometry_sanity.mjs
+python scripts\math_sanity.py
+node scripts\browser_sanity.mjs
+```
+
+`browser_sanity.mjs` khởi Edge headless qua Chrome DevTools Protocol, kiểm SVG Q3/Q5 thực sự render, slider hoạt động, residual gần 0, semantic line Q5 đúng và font tiếng Việt được áp dụng.

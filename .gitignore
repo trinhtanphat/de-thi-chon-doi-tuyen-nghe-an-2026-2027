@@ -1,0 +1,8 @@
+# Local QA / browser-debug artifacts
+qa-*.png
+edge-*-dom.txt
+edge-*-err.txt
+headless-*-dom.txt
+headless-*-err.txt
+__pycache__/
+*.pyc

@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import {spawn} from 'node:child_process';
+import {mkdtemp,rm,readFile} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join,resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
+const root=resolve(fileURLToPath(new URL('..',import.meta.url))),httpPort=18000+Math.floor(Math.random()*10000),base=`http://127.0.0.1:${httpPort}`,edge='C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function waitHttp(url){for(let i=0;i<60;i++){try{const r=await fetch(url);if(r.ok)return}catch{}await sleep(100)}throw new Error(`HTTP timeout ${url}`)}
+async function waitJson(url){for(let i=0;i<60;i++){try{return await (await fetch(url)).json()}catch{}await sleep(120)}throw new Error(`JSON timeout ${url}`)}
+async function waitDebugPort(profile){const p=join(profile,'DevToolsActivePort');for(let i=0;i<80;i++){try{return Number((await readFile(p,'utf8')).split(/\r?\n/)[0])}catch{}await sleep(100)}throw new Error('DevToolsActivePort timeout')}
+function cdp(url){const ws=new WebSocket(url),pending=new Map();let seq=0;const opened=new Promise((ok,bad)=>{ws.onopen=ok;ws.onerror=bad});ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id&&pending.has(m.id)){pending.get(m.id)(m);pending.delete(m.id)}};return {ws,opened,call:async(method,params={})=>{await opened;return new Promise((ok,bad)=>{const id=++seq;pending.set(id,m=>m.error?bad(new Error(JSON.stringify(m.error))):ok(m.result));ws.send(JSON.stringify({id,method,params}))})}}}
+async function evalValue(client,expression){const r=await client.call('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});return r.result.value}
+async function waitExpr(client,expression){for(let i=0;i<70;i++){try{const v=await evalValue(client,expression);if(v)return v}catch{}await sleep(120)}throw new Error(`expression timeout: ${expression}`)}
+const profile=await mkdtemp(join(tmpdir(),'na-edge-')),server=spawn('python',['-m','http.server',String(httpPort),'--bind','127.0.0.1','--directory',root],{stdio:'ignore',windowsHide:true});let browser,debugPort,page;
+try{
+ await waitHttp(`${base}/index.html`);browser=spawn(edge,['--headless=new','--disable-gpu','--disable-extensions','--no-first-run','--remote-debugging-port=0',`--user-data-dir=${profile}`,`${base}/solutions/q3.html`],{stdio:'ignore',windowsHide:true});debugPort=await waitDebugPort(profile);
+ const tabs=await waitJson(`http://127.0.0.1:${debugPort}/json/list`),tab=tabs.find(t=>t.type==='page'&&t.url.includes('/solutions/q3.html'));assert.ok(tab,'q3 page target missing');page=cdp(tab.webSocketDebuggerUrl);await page.opened;await page.call('Page.enable');
+ await waitExpr(page,"document.readyState==='complete'&&!!document.querySelector('#q3GeometrySvg')");const q3=await evalValue(page,"({svg:!!document.querySelector('#q3GeometrySvg'),r:[...document.querySelectorAll('#q3GeometryTool .ok')].map(x=>Number(x.textContent)),fonts:getComputedStyle(document.body).fontFamily,serif:getComputedStyle(document.querySelector('.statement p')).fontFamily,res:performance.getEntriesByType('resource').map(e=>e.name)})");assert.ok(q3.svg&&q3.r.length===2&&q3.r.every(x=>x<1e-8));assert.match(q3.fonts,/Be Vietnam Pro/);assert.match(q3.serif,/Noto Serif/);assert.ok(q3.res.some(x=>x.endsWith('/tools/q3-interactive.js'))&&q3.res.some(x=>x.endsWith('/tools/geometry-core.js')));
+ const q3Circle=await evalValue(page,"getComputedStyle(document.querySelector('#q3GeometrySvg .main-circle')).fill");assert.equal(q3Circle,'none','Q3 circumcircle must not be filled');
+ const q3Move=await evalValue(page,"(()=>{const r=document.querySelector('#q3GeometryTool [data-distance]'),a=document.querySelector('#q3GeometrySvg').getAttribute('viewBox');r.value='280';r.dispatchEvent(new Event('input',{bubbles:true}));return {changed:a!==document.querySelector('#q3GeometrySvg').getAttribute('viewBox'),vals:[...document.querySelectorAll('#q3GeometryTool .ok')].map(x=>Number(x.textContent))}})()");assert.ok(q3Move.changed&&q3Move.vals.every(x=>x<1e-8));
+ await page.call('Page.navigate',{url:`${base}/solutions/q5.html`});await waitExpr(page,"location.pathname.endsWith('/solutions/q5.html')&&document.readyState==='complete'&&!!document.querySelector('#q5GeometrySvg')");
+ const q5=await evalValue(page,"({svg:!!document.querySelector('#q5GeometrySvg'),r:[...document.querySelectorAll('#q5GeometryTool .ok')].map(x=>Number(x.textContent)),roles:['AK','Euler','BC'].map(x=>!!document.querySelector('#q5GeometrySvg [data-line='+x+']')),res:performance.getEntriesByType('resource').map(e=>e.name)})");assert.ok(q5.svg&&q5.r.length===2&&q5.r.every(x=>x<1e-8)&&q5.roles.every(Boolean));assert.ok(q5.res.some(x=>x.endsWith('/tools/q5-interactive.js'))&&q5.res.some(x=>x.endsWith('/tools/geometry-core.js')));
+ const q5Layout=await evalValue(page,"(()=>{const a=document.querySelector('#q5GeometrySvg [data-point=A]'),b=document.querySelector('#q5GeometrySvg [data-point=B]'),c=document.querySelector('#q5GeometrySvg .main-circle');return {a:+a.getAttribute('cy'),b:+b.getAttribute('cy'),fill:getComputedStyle(c).fill,j:!!document.querySelector('#q5GeometrySvg [data-point=J]')}})()");assert.ok(q5Layout.a<q5Layout.b,'Q5 A should render above BC');assert.notEqual(q5Layout.fill,'rgb(253, 224, 71)','Q5 incircle must not use point fill');assert.ok(q5Layout.j,'Q5 default concurrent point J should be visible');
+ const q5Move=await evalValue(page,"(()=>{const b=document.querySelector('#q5GeometryTool [data-b]');b.value='-3.0';b.dispatchEvent(new Event('input',{bubbles:true}));return [...document.querySelectorAll('#q5GeometryTool .ok')].map(x=>Number(x.textContent))})()");assert.ok(q5Move.every(x=>x<1e-8));
+ console.log('BROWSER SANITY: PASS (render, interaction, geometry residuals, visual invariants, Vietnamese font stacks)');
+} finally {
+ if(page)page.ws.close();
+ if(debugPort){try{const ver=await waitJson(`http://127.0.0.1:${debugPort}/json/version`);const bc=cdp(ver.webSocketDebuggerUrl);await bc.opened;await bc.call('Browser.close').catch(()=>{});bc.ws.close()}catch{}}
+ server.kill();if(browser&&!browser.killed)browser.kill();await sleep(300);await rm(profile,{recursive:true,force:true}).catch(()=>{});
+}

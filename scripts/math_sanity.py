@@ -1,4 +1,4 @@
-from fractions import Fraction as F
+﻿from fractions import Fraction as F
 from itertools import product
 from math import gcd
 
@@ -55,4 +55,47 @@ for n in range(3,9):
         assert len(records)==formula,(n,k,len(records),formula)
         assert injective==(g==1),(n,k,injective,g)
 
-print('MATH SANITY: PASS (C4 seeds/extensions, C5 coordinate identities, C7 exhaustive n<=8)')
+# Câu 1: kiểm tra hệ số tiệm cận trên các đa thức monic mẫu P(x)=x^d+x.
+for d in (5,6,9):
+    n=20000
+    P=lambda x,d=d:x**d+x
+    Pd=lambda x,d=d:d*x**(d-1)+1
+    y=n*((P(n+1)-P(n))/Pd(n)-1)
+    assert abs(y-(d-1)/2)<2e-3,(d,y)
+
+# Câu 4: đồng nhất thức dùng trong nhánh khuếch đại số mũ.
+for k in range(2,7):
+    for p in (2,3,5,7):
+        for a in range(1,5):
+            lhs=sum(p**(k*j) for j in range(2*a+2))
+            rhs=sum(p**(k*j) for j in range(a+1))*(1+p**(k*(a+1)))
+            assert lhs==rhs,(k,p,a)
+
+def poly_mul(a,b):
+    out=[0]*(len(a)+len(b)-1)
+    for i,x in enumerate(a):
+        for j,y in enumerate(b):out[i+j]+=x*y
+    return out
+
+def poly_eval(a,x):
+    return sum(c*x**i for i,c in enumerate(a))
+
+# Câu 6: kiểm chứng các construction đạt cận cho n=3..10.
+for n in range(3,11):
+    m=n//2
+    coeff=[1]
+    for j in range(1,m+1):coeff=poly_mul(coeff,[-j*j,0,1])
+    if n%2==0:
+        assert len([c for c in coeff if c])==m+1
+        assert len([c for c in coeff if c])==(n+2)//2
+    else:
+        q=[0]+coeff
+        roots=list(range(-m,m+1));delta=.1
+        edge_vals=[abs(poly_eval(q,r+s*delta)) for r in roots for s in (-1,1)]
+        eps=min(edge_vals)/2
+        p=q[:];p[0]+=eps
+        assert p[0]!=0 and len([c for c in p if c])==m+2
+        for r in roots:
+            assert poly_eval(p,r-delta)*poly_eval(p,r+delta)<0,(n,r)
+
+print('MATH SANITY: PASS (C1 asymptotics, C4 construction identities, C5 coordinates, C6 sharpness, C7 exhaustive n<=8)')

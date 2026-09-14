@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+const q3=await readFile(new URL('../tools/q3-interactive.js',import.meta.url),'utf8');
+const q5=await readFile(new URL('../tools/q5-interactive.js',import.meta.url),'utf8');
+assert.match(q3,/class=\\?"main-circle/,'Q3 must distinguish circumcircle from point markers');
+assert.match(q3,/data-point=/,'Q3 points need semantic markers');
+assert.match(q5,/data-line=.*\$\{role\}/,'Q5 line helper must emit semantic data-line markers');
+assert.match(q5,/ln\('K','J','proof','AK'\)/,'Q5 AK display should span K to J');
+assert.match(q5,/ln\('O1','J','euler','Euler'\)/,'Q5 Euler display should span O1 to J');
+assert.match(q5,/ln\('B','J','base-ext','BC'\)/,'Q5 BC display should extend to J');
+for(const label of ['S','R','E'])assert.match(q5,new RegExp(`${label}:\\[[^\\]]+\\]`),`Q5 label offset missing for ${label}`);
+console.log('RENDERER SANITY: PASS (semantic line roles, K/O1/B-to-J coverage, label offsets)');
