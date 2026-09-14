@@ -1,5 +1,5 @@
-﻿from fractions import Fraction as F
-from itertools import product
+from fractions import Fraction as F
+from itertools import product, combinations_with_replacement
 from math import gcd
 
 def divisors(n):
@@ -98,4 +98,15 @@ for n in range(3,11):
         for r in roots:
             assert poly_eval(p,r-delta)*poly_eval(p,r+delta)<0,(n,r)
 
-print('MATH SANITY: PASS (C1 asymptotics, C4 construction identities, C5 coordinates, C6 sharpness, C7 exhaustive n<=8)')
+# Câu 6: stress exact với mọi multiset nghiệm nguyên khác 0, bậc 3..7.
+root_pool=(-3,-2,-1,1,2,3)
+for n in range(3,8):
+    for roots in combinations_with_replacement(root_pool,n):
+        coeff=[1]
+        for r in roots:
+            coeff=poly_mul(coeff,[-r,1])
+        assert coeff[0]!=0
+        for k in range(n-1):
+            assert coeff[k]!=0 or coeff[k+1]!=0,(n,roots,k,coeff)
+
+print('MATH SANITY: PASS (C1 asymptotics, C4 construction identities, C5 coordinates, C6 sharpness+real-root stress, C7 exhaustive n<=8)')

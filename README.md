@@ -37,6 +37,7 @@ node scripts\renderer_sanity.mjs
 node scripts\geometry_sanity.mjs
 python scripts\math_sanity.py
 node scripts\browser_sanity.mjs
+node scripts\layout_sanity.mjs
 ```
 
-`browser_sanity.mjs` khởi Edge headless qua Chrome DevTools Protocol, kiểm SVG Q3/Q5 thực sự render, slider hoạt động, residual gần 0, semantic line Q5 đúng và font tiếng Việt được áp dụng.
+`browser_sanity.mjs` khởi Edge headless qua Chrome DevTools Protocol, kiểm SVG Q3/Q5 thực sự render, slider hoạt động, residual gần 0, semantic line Q5 đúng và font tiếng Việt được áp dụng. `layout_sanity.mjs` kiểm toàn bộ 9 trang ở 375/768/1200 px và fail nếu xuất hiện horizontal overflow.

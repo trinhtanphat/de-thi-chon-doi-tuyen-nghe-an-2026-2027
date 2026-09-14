@@ -2,6 +2,7 @@ from pathlib import Path
 from html.parser import HTMLParser
 from urllib.parse import urlparse
 import sys
+import re
 
 if hasattr(sys.stdout,'reconfigure'):sys.stdout.reconfigure(encoding='utf-8')
 ROOT=Path(__file__).resolve().parents[1]
@@ -24,6 +25,9 @@ for p in ROOT.rglob('*'):
     for token in BAD:
         if token in text:errors.append(f'BAD_TOKEN {token!r} in {p.relative_to(ROOT)}')
     if p.suffix.lower()=='.html':
+        for pat in (r'\\\((.*?)\\\)',r'\\\[(.*?)\\\]'):
+            for m in re.finditer(pat,text,re.S):
+                if '<' in m.group(1): errors.append(f'RAW_LT_IN_TEX {p.relative_to(ROOT)}: {m.group(0)[:80]}')
         parser=Links();parser.feed(text)
         if len(parser.ids)!=len(set(parser.ids)):errors.append(f'DUPLICATE_ID {p.relative_to(ROOT)}')
         for href in parser.hrefs:
