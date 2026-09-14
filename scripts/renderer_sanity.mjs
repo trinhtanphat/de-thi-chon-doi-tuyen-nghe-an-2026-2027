@@ -5,11 +5,14 @@ const q5=await readFile(new URL('../tools/q5-interactive.js',import.meta.url),'u
 const labels=await readFile(new URL('../tools/label-placement.js',import.meta.url),'utf8');
 assert.match(q3,/class=\\?"main-circle/,'Q3 must distinguish circumcircle from point markers');
 assert.match(q3,/data-point=/,'Q3 points need semantic markers');
+assert.match(q3,/placeCardinalLabels/,'Q3 must use collision-aware cardinal labels');
+assert.doesNotMatch(q3,/const LABEL=/,'Q3 must not use fixed diagonal label offsets');
 assert.match(q5,/data-line=.*\$\{role\}/,'Q5 line helper must emit semantic data-line markers');
 assert.match(q5,/\['K','J','proof','AK'\]/,'Q5 AK display should span K to J');
 assert.match(q5,/\['O1','J','euler','Euler'\]/,'Q5 Euler display should span O1 to J');
 assert.match(q5,/\['B','J','base-ext','BC'\]/,'Q5 BC display should extend to J');
 assert.match(q5,/placeCardinalLabels/,'Q5 must use collision-aware cardinal labels');
 assert.match(labels,/const DIRS=.*up.*right.*down.*left/,'Label tool must use four cardinal directions');
+assert.match(labels,/function dfs/,'Label tool must resolve label-label collisions by search');
 assert.match(q5,/data-label-dir/,'Q5 SVG must expose the chosen cardinal direction');
 console.log('RENDERER SANITY: PASS (semantic line roles, K/O1/B-to-J coverage, cardinal collision-aware labels)');

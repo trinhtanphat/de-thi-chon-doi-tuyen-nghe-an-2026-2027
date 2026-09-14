@@ -34,10 +34,13 @@ Chạy toàn bộ gate sau:
 python scripts\verify_site.py
 python scripts\font_sanity.py
 node scripts\renderer_sanity.mjs
+node scripts\label_sanity.mjs
+node scripts\q3_label_sanity.mjs
+node scripts\q5_label_sanity.mjs
 node scripts\geometry_sanity.mjs
 python scripts\math_sanity.py
 node scripts\browser_sanity.mjs
 node scripts\layout_sanity.mjs
 ```
 
-`browser_sanity.mjs` khởi Edge headless qua Chrome DevTools Protocol, kiểm SVG Q3/Q5 thực sự render, slider hoạt động, residual gần 0, semantic line Q5 đúng và font tiếng Việt được áp dụng. `layout_sanity.mjs` kiểm toàn bộ 9 trang ở 375/768/1200 px và fail nếu xuất hiện horizontal overflow.
+`q3_label_sanity.mjs` và `q5_label_sanity.mjs` dùng Edge/CDP với probe local độc lập CDN để kiểm tên điểm chỉ theo 4 hướng 90°, không đè cạnh/đường tròn/nhãn khác. `browser_sanity.mjs` là kiểm tra full-page bổ sung và có thể phụ thuộc CDN ngoài mạng. `layout_sanity.mjs` kiểm toàn bộ 9 trang ở 375/768/1200 px và fail nếu xuất hiện horizontal overflow.

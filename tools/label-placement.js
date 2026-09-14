@@ -1,6 +1,6 @@
 const DIRS={up:{x:0,y:-1},right:{x:1,y:0},down:{x:0,y:1},left:{x:-1,y:0}};
-const DEFAULT_GAPS=[4,8,14,22,32,44,58,76,96,120,148];
-const rectOverlap=(a,b,m=2)=>!(a.x+a.width+m<b.x||b.x+b.width+m<a.x||a.y+a.height+m<b.y||b.y+b.height+m<a.y);
+const DEFAULT_GAPS=[6,10,16,24,34,46,60,78,98,122,150];
+const rectOverlap=(a,b,m=5)=>!(a.x+a.width+m<b.x||b.x+b.width+m<a.x||a.y+a.height+m<b.y||b.y+b.height+m<a.y);
 const inside=(p,r)=>p.x>=r.x&&p.x<=r.x+r.width&&p.y>=r.y&&p.y<=r.y+r.height;
 const inflate=(r,m)=>({x:r.x-m,y:r.y-m,width:r.width+2*m,height:r.height+2*m});
 function segmentHitsRect(a,b,rect){
@@ -15,7 +15,7 @@ function circleHitsRect(circle,rect){
 }
 function pointHitsRect(p,rect){const r=inflate(rect,2),nx=Math.max(r.x,Math.min(p.x,r.x+r.width)),ny=Math.max(r.y,Math.min(p.y,r.y+r.height));return Math.hypot(nx-p.x,ny-p.y)<7}
 function labelRect(point,name,dir,gap,fontSize){
-  const w=Math.max(14,fontSize*.58*name.length+7),h=fontSize*1.2,d=5+gap,v=DIRS[dir];
+  const w=Math.max(18,fontSize*.72*name.length+10),h=fontSize*1.55,d=5+gap,v=DIRS[dir];
   const cx=point.x+v.x*(d+(v.x?w/2:h/2)),cy=point.y+v.y*(d+(v.y?h/2:w/2));
   return{x:cx-w/2,y:cy-h/2,width:w,height:h,cx,cy,dir,gap};
 }
