@@ -52,8 +52,12 @@ exam_checks={
     'q7-si':r'Gọi số ghi được tại ngọn đèn thứ \(i\) là \(s_i\).'}
 for label,phrase in exam_checks.items():
     if phrase not in exam:errors.append(f'EXAM_MISSING_{label}')
+q2=(ROOT/'solutions/q2.html').read_text(encoding='utf-8-sig')
 q3=(ROOT/'solutions/q3.html').read_text(encoding='utf-8-sig')
 q5=(ROOT/'solutions/q5.html').read_text(encoding='utf-8-sig')
+for marker in ('id="part-a"','id="part-b"'):
+    if marker not in q2:errors.append(f'Q2_PART_MISSING {marker}')
+if q2.count('class="solution-part"') != 2:errors.append('Q2_PART_COUNT')
 if 'id="q3GeometryTool"' not in q3 or '../tools/q3-interactive.js' not in q3:errors.append('Q3_TOOL_MISSING')
 if 'id="q5GeometryTool"' not in q5 or '../tools/q5-interactive.js' not in q5:errors.append('Q5_TOOL_MISSING')
 statement_checks={
