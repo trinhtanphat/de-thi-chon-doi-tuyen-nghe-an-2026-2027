@@ -52,6 +52,18 @@ exam_checks={
     'q7-si':r'Gọi số ghi được tại ngọn đèn thứ \(i\) là \(s_i\).'}
 for label,phrase in exam_checks.items():
     if phrase not in exam:errors.append(f'EXAM_MISSING_{label}')
+
+def statement_fragment(text,cls):
+    m=re.search(rf'<section class="{cls}">(.*?)</section>',text,re.S)
+    if not m:return None
+    body=re.sub(r'^<span class="label">.*?</span>','',m.group(1),flags=re.S)
+    body=re.sub(r'<p><a href="solutions/q\d+\.html">.*?</p>\s*$','',body,flags=re.S)
+    body=re.sub(r'<[^>]+>',' ',body)
+    return re.sub(r'\s+',' ',body).strip()
+for i in range(1,8):
+    sol=(ROOT/f'solutions/q{i}.html').read_text(encoding='utf-8-sig')
+    if statement_fragment(exam,f'statement q{i}') != statement_fragment(sol,'statement'):
+        errors.append(f'STATEMENT_DRIFT_q{i}')
 q2=(ROOT/'solutions/q2.html').read_text(encoding='utf-8-sig')
 q3=(ROOT/'solutions/q3.html').read_text(encoding='utf-8-sig')
 q5=(ROOT/'solutions/q5.html').read_text(encoding='utf-8-sig')
@@ -67,6 +79,16 @@ statement_checks={
 for i,phrase in statement_checks.items():
     t=(ROOT/f'solutions/q{i}.html').read_text(encoding='utf-8-sig')
     if phrase not in t:errors.append(f'INCOMPLETE_STATEMENT_q{i}')
+
+review_checks={
+    3:r'0\lt u\lt1',
+    4:'bắt buộc rơi vào Trường hợp A',
+    5:r'bc\lt-1',
+    7:'đây cũng là điều kiện đủ'}
+for i,phrase in review_checks.items():
+    t=(ROOT/f'solutions/q{i}.html').read_text(encoding='utf-8-sig')
+    if phrase not in t:errors.append(f'REVIEW_RIGOR_q{i}')
+if 'bị chặn trên trên' in q2:errors.append('Q2_DUPLICATED_WORD')
 
 if errors:
     print('SITE VERIFY: FAIL')
