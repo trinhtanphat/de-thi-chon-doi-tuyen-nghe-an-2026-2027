@@ -1,6 +1,6 @@
 import {circumcenter,orthocenter,lineIntersection,distance,sub,normalizedDotResidual,normalizedCrossResidual} from './geometry-core.js';
+import {placeCardinalLabels} from './label-placement.js';
 
-const LABEL={A:[10,-12],B:[-24,22],C:[10,22],D:[10,-12],E:[16,22],F:[-26,16],I:[10,-12],K:[10,22],S:[-24,-14],T:[10,-10],R:[14,-2],O1:[-30,-10],J:[10,22]};
 const must=(p,name)=>{if(!p)throw new Error(`Degenerate Q5 construction at ${name}`);return p};
 const fmt=x=>Number(x).toExponential(2);
 
@@ -28,11 +28,13 @@ function mapModel(m){
 }
 function q5Svg(m){
   const {f,scale,showJ}=mapModel(m),P={};for(const k of ['A','B','C','D','E','F','I','K','S','T','R','O1','J'])if(m[k]&&(k!=='J'||showJ))P[k]=f(m[k]);
-  const seg=(a,b,cls='',role='')=>`<line${role?` data-line="${role}"`:''} class="${cls}" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"/>`;
-  const ln=(a,b,cls='',role='')=>seg(P[a],P[b],cls,role);
-  const pt=n=>{const [dx,dy]=LABEL[n]||[7,-7];return `<circle class="point" data-point="${n}" cx="${P[n].x}" cy="${P[n].y}" r="5"/><text x="${P[n].x+dx}" y="${P[n].y+dy}">${n}</text>`};
-  const concurrency=showJ?`${ln('K','J','proof','AK')}${ln('O1','J','euler','Euler')}${ln('B','J','base-ext','BC')}`:`${ln('A','K','proof','AK')}${ln('I','O1','euler','Euler')}${ln('B','C','base-ext','BC')}`;
-  return `<svg id="q5GeometrySvg" viewBox="0 0 760 480" role="img" aria-label="Hình dựng chính xác Câu 5"><style>line,circle{vector-effect:non-scaling-stroke}.tri{stroke:#e2e8f0;stroke-width:3}.aux{stroke:#64748b;stroke-width:1.5;stroke-dasharray:7 6}.key{stroke:#fb7185;stroke-width:3}.proof{stroke:#22d3ee;stroke-width:2.5}.euler{stroke:#a3e635;stroke-width:2.5}.base-ext{stroke:#60a5fa;stroke-width:1.7;stroke-dasharray:7 6}.main-circle{fill:rgba(192,132,252,.06);stroke:#c084fc;stroke-width:3}.point{fill:#fde047;stroke:#0f172a;stroke-width:1.5}text{fill:#f8fafc;font:700 15px 'Be Vietnam Pro','Noto Sans',sans-serif;paint-order:stroke;stroke:#0b1324;stroke-width:3px}</style><circle class="main-circle" cx="${P.I.x}" cy="${P.I.y}" r="${scale}"/>${ln('A','B','tri')}${ln('A','C','tri')}${ln('B','C','tri')}${ln('C','K','aux')}${ln('B','K','aux')}${ln('D','E','aux')}${ln('D','F','aux')}${ln('S','T','key')}${ln('E','F','aux')}${ln('I','R','proof')}${concurrency}${['A','B','C','D','E','F','I','K','S','T','R','O1'].map(pt).join('')}${showJ?pt('J'):''}</svg>`;
+  const specs=[['A','B','tri'],['A','C','tri'],['B','C','tri'],['C','K','aux'],['B','K','aux'],['D','E','aux'],['D','F','aux'],['S','T','key'],['E','F','aux'],['I','R','proof']];
+  if(showJ)specs.push(['K','J','proof','AK'],['O1','J','euler','Euler'],['B','J','base-ext','BC']);else specs.push(['A','K','proof','AK'],['I','O1','euler','Euler'],['B','C','base-ext','BC']);
+  const segments=specs.map(([a,b])=>({a:P[a],b:P[b]})),labels=placeCardinalLabels({points:P,segments,circles:[{c:P.I,r:scale}],bounds:{x:0,y:0,width:760,height:480}});
+  const line=([a,b,cls='',role=''])=>`<line${role?` data-line="${role}"`:''} class="${cls}" x1="${P[a].x}" y1="${P[a].y}" x2="${P[b].x}" y2="${P[b].y}"/>`;
+  const pt=n=>{const q=labels[n];return `<circle class="point" data-point="${n}" cx="${P[n].x}" cy="${P[n].y}" r="5"/><text data-label="${n}" data-label-dir="${q.dir}" x="${q.cx}" y="${q.cy}" text-anchor="middle" dominant-baseline="central">${n}</text>`};
+  const names=['A','B','C','D','E','F','I','K','S','T','R','O1',...(showJ?['J']:[])];
+  return `<svg id="q5GeometrySvg" viewBox="0 0 760 480" role="img" aria-label="Hình dựng chính xác Câu 5"><style>line,circle{vector-effect:non-scaling-stroke}.tri{stroke:#e2e8f0;stroke-width:3}.aux{stroke:#64748b;stroke-width:1.5;stroke-dasharray:7 6}.key{stroke:#fb7185;stroke-width:3}.proof{stroke:#22d3ee;stroke-width:2.5}.euler{stroke:#a3e635;stroke-width:2.5}.base-ext{stroke:#60a5fa;stroke-width:1.7;stroke-dasharray:7 6}.main-circle{fill:rgba(192,132,252,.06);stroke:#c084fc;stroke-width:3}.point{fill:#fde047;stroke:#0f172a;stroke-width:1.5}text{fill:#f8fafc;font:700 15px 'Be Vietnam Pro','Noto Sans',sans-serif;paint-order:stroke;stroke:#0b1324;stroke-width:3px}</style><circle class="main-circle" cx="${P.I.x}" cy="${P.I.y}" r="${scale}"/>${specs.map(line).join('')}${names.map(pt).join('')}</svg>`;
 }
 function exportSvg(id,name){const el=document.getElementById(id);if(!el)return;const blob=new Blob([el.outerHTML],{type:'image/svg+xml'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 
