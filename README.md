@@ -2,6 +2,10 @@
 
 Website editorial cho trọn bộ 7 bài, 2 ngày thi, 180 phút/ngày.
 
+## Website
+
+GitHub Pages: https://trinhtanphat.github.io/de-thi-chon-doi-tuyen-nghe-an-2026-2027/
+
 ## Nội dung
 
 - `de-bai.html`: toàn văn đề bài từ hai ảnh gốc người dùng cung cấp.
@@ -16,8 +20,9 @@ Website editorial cho trọn bộ 7 bài, 2 ngày thi, 180 phút/ngày.
 - Câu 2: nghiệm duy nhất `f(x)=x`.
 - Câu 3: `YZ` qua trung điểm `AH`; `XA ⟂ XP`.
 - Câu 4: dựng được dây chuyền vô hạn các số tốt và số ước nguyên tố phân biệt không bị chặn.
+- Câu 5: `IR ⟂ AK`; `AK`, `BC` và đường Euler của tam giác `KBC` đồng quy hoặc đôi một song song.
 - Câu 6: số hệ số khác 0 nhỏ nhất là `ceil(n/2)+1`.
-- Câu 7: phần a iff `gcd(n,k)=1`; phần b có công thức đóng theo `g=gcd(n,k)`.
+- Câu 7: phần a iff `gcd(n,k)=1`; phần b, với `g=gcd(n,k)`, `m=n/g`, số bản ghi là `(2^m-1)^(g-1)(2^m+g-1)`.
 
 ## Kiểm tra
 
